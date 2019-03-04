@@ -37,7 +37,7 @@ module Sequel
         def associate_through type, name, opts, &block
           raise Error, "#{type} does not support through associations" unless assoc_type = Sequel.synchronize{ASSOCIATION_THROUGH_TYPES[type]}
 
-          result = find_association_path **opts, name: name, models: self, from_through: true
+          result = find_association_path **opts, name: name, models: self
 
           # Remove the last table if it matches the destination table
           dest_model = result[:models].pop
@@ -78,7 +78,7 @@ module Sequel
         end
 
         # Recurses through associations until a path to the destination is completed
-        def find_association_path opts
+        def find_association_path opts, from_through: true
 
           # Initialize arguments
           [:tables, :keys, :through, :models, :assocs].each do |k|
