@@ -1,5 +1,9 @@
 # Sequel::Through
 
+[![Gem Version](https://badge.fury.io/rb/sequel-through.svg)](https://badge.fury.io/rb/sequel-through)
+[![Build Status](https://secure.travis-ci.org/kenaniah/sequel-through.svg)](https://travis-ci.org/kenaniah/sequel-through)
+[![Inline docs](https://inch-ci.org/github/kenaniah/sequel-through.svg?branch=master)](https://inch-ci.org/github/kenaniah/sequel-through)
+
 This gem extends [sequel](https://github.com/jeremyevans/sequel)'s associations to provide the ability to create associations that flow through other associations, similar to how `:through` works in [ActiveRecord](https://guides.rubyonrails.org/association_basics.html#the-has-many-through-association).
 
 ## Installation
