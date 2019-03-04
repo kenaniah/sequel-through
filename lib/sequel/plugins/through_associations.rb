@@ -16,6 +16,7 @@ module Sequel
 
       # Ensure associations are loaded
       def self.apply mod
+        Sequel.extension :inflector
         mod.plugin :many_through_many
       end
 
@@ -37,7 +38,7 @@ module Sequel
         def associate_through type, name, opts, &block
           raise Error, "#{type} does not support through associations" unless assoc_type = Sequel.synchronize{ASSOCIATION_THROUGH_TYPES[type]}
 
-          result = find_association_path **opts, name: name, models: self, from_through: true
+          result = find_association_path(**opts, name: name, models: self, from_through: true)
 
           # Remove the last table if it matches the destination table
           dest_model = result[:models].pop
@@ -51,7 +52,7 @@ module Sequel
           end
 
           # Create the association
-          if assoc_type.to_s.ends_with? "_through_many"
+          if assoc_type.to_s.end_with? "_through_many"
             # *_through_many has a path argument
             self.send(assoc_type,
               name,
@@ -78,7 +79,7 @@ module Sequel
         end
 
         # Recurses through associations until a path to the destination is completed
-        def find_association_path opts
+        def find_association_path **opts
 
           # Initialize arguments
           [:tables, :keys, :through, :models, :assocs].each do |k|
@@ -125,7 +126,7 @@ module Sequel
           opts[:assocs].push assoc
 
           # Handle *_through_many associations
-          if assoc[:type].to_s.ends_with? "_through_many"
+          if assoc[:type].to_s.end_with? "_through_many"
 
             opts[:through].push assoc[:originally_through]
             opts[:from_through] = true
@@ -138,7 +139,7 @@ module Sequel
             return begin
               model = search.shift
               raise NoAssociationPath, opts unless model
-              self.find_association_path **opts, models: opts[:models] + [model]
+              self.find_association_path(**opts, models: opts[:models] + [model])
             rescue MissingAssociation
               # Try the next model in the search path
               retry
@@ -154,7 +155,7 @@ module Sequel
             opts[:through].push assoc[:using] || assoc[:through]
             opts[:from_through] = true
             opts[:using] = nil
-            return self.find_association_path **opts
+            return self.find_association_path(**opts)
           end
 
           # Otherwise, add the new table to the stack
@@ -187,7 +188,7 @@ module Sequel
           # Check for a source association
           opts[:through].push opts[:using] || opts[:name]
           opts[:from_through] = false
-          return self.find_association_path **opts
+          return self.find_association_path(**opts)
 
         end
 
