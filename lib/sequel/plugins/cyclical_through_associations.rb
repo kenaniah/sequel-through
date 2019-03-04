@@ -1,10 +1,10 @@
 module Sequel
   module Plugins
-    module CyclicalAssociationSolver
+    module CyclicalThroughAssociations
 
       # Ensure through associations are loaded
       def self.apply mod
-        mod.plugin(:through_associations)
+        mod.plugin :through_associations
       end
 
       module ClassMethods
@@ -25,7 +25,7 @@ module Sequel
             # Attempt to solve remaining cyclical associations
             @@_resolver_stack = []
             stack.each do |klass, assoc_type, name, opts, block|
-              klass.send(assoc_type, name, **opts, &block)
+              klass.send assoc_type, name, **opts, &block
             end
 
           end
@@ -33,13 +33,13 @@ module Sequel
           # Output errors for any unsolved associations
           @@_resolving = true
           @@_resolver_stack.each do |klass, assoc_type, name, opts, block|
-            klass.send(assoc_type, name, **opts, &block)
+            klass.send assoc_type, name, **opts, &block
           end
           @@_resolving = false
 
         end
 
-        def associate_through(type, name, opts, &block)
+        def associate_through type, name, opts, &block
           begin
             result = super
           rescue \
@@ -52,7 +52,7 @@ module Sequel
 
             # Otherwise, attempt to resolve later
             unless result
-              @@_resolver_stack.push([self, type, name, opts, block])
+              @@_resolver_stack.push [self, type, name, opts, block]
               return
             end
 
