@@ -16,16 +16,16 @@ module Sequel
 
       # Ensure associations are loaded
       def self.apply mod
-        mod.plugin(:many_through_many)
+        mod.plugin :many_through_many
       end
 
-      module InstanceMethods
+      module ClassMethods
 
-        def associate(type, name, opts = OPTS, &block)
+        def associate type, name, opts = OPTS, &block
 
           # Handle associations that are based on others
           if opts[:through] && !type.to_s.include?("_through_")
-            return associate_through(type, name, opts, &block)
+            return associate_through type, name, opts, &block
           end
 
           super
@@ -34,10 +34,10 @@ module Sequel
 
         # Associates a related model with the current model using another association
         # as the intermediary.
-        def associate_through(type, name, opts, &block)
-          raise(Error, "#{type} does not support through associations") unless assoc_type = Sequel.synchronize{ASSOCIATION_THROUGH_TYPES[type]}
+        def associate_through type, name, opts, &block
+          raise Error, "#{type} does not support through associations" unless assoc_type = Sequel.synchronize{ASSOCIATION_THROUGH_TYPES[type]}
 
-          result = find_association_path(**opts, name: name, models: self, from_through: true)
+          result = find_association_path **opts, name: name, models: self, from_through: true
 
           # Remove the last table if it matches the destination table
           dest_model = result[:models].pop
@@ -47,7 +47,7 @@ module Sequel
           path = []
           left_key = result[:keys].shift
           result[:tables].each do |table|
-            path.push([table, result[:keys].shift, result[:keys].shift])
+            path.push [table, result[:keys].shift, result[:keys].shift]
           end
 
           # Create the association
@@ -103,16 +103,16 @@ module Sequel
               path = [m]
 
               opts[:models].zip(opts[:through]).each do |model, through|
-                path.push("#{model}.#{through}")
+                path.push "#{model}.#{through}"
               end
 
-              raise(MissingAssociation, "#{m} is missing through association :#{t} from #{path.join " -> "}")
+              raise MissingAssociation, "#{m} is missing through association :#{t} from #{path.join " -> "}"
 
             else
 
               if opts[:assocs].last[:name].to_s.singularize != (opts[:using] || opts[:name]).to_s.singularize
                 text = "#{opts[:models].first}.#{opts[:name]} could not be resolved through path #{opts[:models].zip(opts[:through]).map{|model, through| "#{model}.#{through}"}.join " -> "}"
-                raise(MissingAssociation, text)
+                raise MissingAssociation, text
               end
 
               return opts
@@ -122,12 +122,12 @@ module Sequel
           end
 
           # Store the association
-          opts[:assocs].push(assoc)
+          opts[:assocs].push assoc
 
           # Handle *_through_many associations
-          if assoc[:type].to_s.ends_with?("_through_many")
+          if assoc[:type].to_s.ends_with? "_through_many"
 
-            opts[:through].push(assoc[:originally_through])
+            opts[:through].push assoc[:originally_through]
             opts[:from_through] = true
 
             # Search through the existing model first, falling back to the associated model
@@ -137,8 +137,8 @@ module Sequel
             ]
             return begin
               model = search.shift
-              raise(NoAssociationPath, opts) unless model
-              self.find_association_path(**opts, models: opts[:models] + [model])
+              raise NoAssociationPath, opts unless model
+              self.find_association_path **opts, models: opts[:models] + [model]
             rescue MissingAssociation
               # Try the next model in the search path
               retry
@@ -147,29 +147,29 @@ module Sequel
           end
 
           # Move to the new model
-          opts[:models].push(assoc[:class] || assoc[:class_name].constantize)
+          opts[:models].push assoc[:class] || assoc[:class_name].constantize
 
           # Read the through association if present
           if assoc[:through]
-            opts[:through].push(assoc[:using] || assoc[:through])
+            opts[:through].push assoc[:using] || assoc[:through]
             opts[:from_through] = true
             opts[:using] = nil
-            return self.find_association_path(**opts)
+            return self.find_association_path **opts
           end
 
           # Otherwise, add the new table to the stack
           if opts[:from_through] && opts[:models].last.respond_to?(:cti_tables)
-            opts[:tables].push(opts[:models].last.cti_tables.first)
+            opts[:tables].push opts[:models].last.cti_tables.first
           else
-            opts[:tables].push(opts[:models].last.table_name)
+            opts[:tables].push opts[:models].last.table_name
           end
 
           # Left side
           case assoc[:type]
             when :one_to_many, :one_to_one # 1:_
-              opts[:keys].push(assoc.primary_key)
+              opts[:keys].push assoc.primary_key
             when :many_to_one # n:_
-              opts[:keys].push(assoc[:key])
+              opts[:keys].push assoc[:key]
             else
               raise
           end
@@ -177,17 +177,17 @@ module Sequel
           # Right side
           case assoc[:type]
             when :many_to_one, :one_to_one # _:1
-              opts[:keys].push(assoc.primary_key)
+              opts[:keys].push assoc.primary_key
             when :one_to_many # _:n
-              opts[:keys].push(assoc[:key])
+              opts[:keys].push assoc[:key]
             else
               raise
           end
 
           # Check for a source association
-          opts[:through].push(opts[:using] || opts[:name])
+          opts[:through].push opts[:using] || opts[:name]
           opts[:from_through] = false
-          return self.find_association_path(**opts)
+          return self.find_association_path **opts
 
         end
 
