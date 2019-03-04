@@ -12,6 +12,8 @@ Gem::Specification.new do |spec|
   spec.homepage      = "https://github.com/kenaniah/sequel-through"
   spec.license       = "MIT"
 
+  s.required_ruby_version = ">= 2.4"
+
   if spec.respond_to?(:metadata)
     spec.metadata["homepage_uri"] = spec.homepage
     spec.metadata["source_code_uri"] = "https://github.com/kenaniah/sequel-through"
@@ -29,7 +31,7 @@ Gem::Specification.new do |spec|
 
   spec.add_dependency  "sequel", "~> 5"
 
-  spec.add_development_dependency "bundler", "~> 2.0"
-  spec.add_development_dependency "rake", "~> 12.0"
-  spec.add_development_dependency "minitest", "~> 5.0"
+  spec.add_development_dependency "bundler"
+  spec.add_development_dependency "rake"
+  spec.add_development_dependency "minitest"
 end
