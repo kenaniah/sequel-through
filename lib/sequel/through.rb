@@ -1,8 +1,3 @@
-require "sequel/through/version"
-
-module Sequel
-  module Through
-    class Error < StandardError; end
-    # Your code goes here...
-  end
-end
+require "sequel"
+require "sequel/plugins/through_associations"
+require "sequel/plugins/cyclical_association_solver"
