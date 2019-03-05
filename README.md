@@ -24,7 +24,40 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+```ruby
+# Load the plugin
+Sequel::Model.plugin :cyclical_through_associations
+
+class User < Sequel::Model
+  one_to_many :user_has_security_groups
+  one_to_many :security_groups, through: :user_has_security_groups
+  one_to_many :privileges, through: :security_groups
+end
+class SecurityGroup < Sequel::Model
+  one_to_many :security_group_has_privileges
+  one_to_many :privileges, through: :security_group_has_privileges
+end
+class Privilege < Sequel::Model
+end
+class UserHasSecurityGroup < Sequel::Model
+  many_to_one :user
+  many_to_one :security_group
+  one_to_many :privileges, through: :security_group
+end
+class SecurityGroupHasPrivilege < Sequel::Model
+  many_to_one :security_group
+  many_to_one :privilege
+end
+
+# Solve any cyclical dependencies (when :cyclical_through_associations is used)
+Sequel::Model.solve_cyclical_associations!
+
+# Use the intermediate associations
+User.first.security_groups # => [#<SecurityGroup 1>, #<SecurityGroup 2> ...]
+User.first.privileges # => [#<Privilege A>, #<Privilege B> ...]
+```
+
+This plugin adds an optional `:through` key for `*_to_one` and `*_to_many` associations. When `:through` is provided,  intermediary associations are traversed and a single `one_through_many` or `many_through_many` association is added to the base model using a JOIN structure calculated from the associations traversed.
 
 ## Development
 
