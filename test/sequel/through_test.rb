@@ -40,11 +40,34 @@ describe "Sequel::Plugins::ThroughAssociations" do
     UserHasSecurityGroup.one_to_many :privileges, through: :security_group
     User.one_to_many :privileges, through: :security_groups
 
-    assert_equal :one_through_many, User.association_reflection(:security_groups)[:type]
-    assert_equal :one_through_many, SecurityGroup.association_reflection(:privileges)[:type]
-    assert_equal :one_through_many, UserHasSecurityGroup.association_reflection(:privileges)[:type]
-    assert_equal :one_through_many, User.association_reflection(:privileges)[:type]
+    # One to many
+    assert_equal :many_through_many, User.association_reflection(:security_groups)[:type]
+    assert_equal :many_through_many, SecurityGroup.association_reflection(:privileges)[:type]
+    assert_equal :many_through_many, UserHasSecurityGroup.association_reflection(:privileges)[:type]
+    assert_equal :many_through_many, User.association_reflection(:privileges)[:type]
 
+    # Many to many
+    User.many_to_many :privileges, through: :security_groups
+    assert_equal :many_through_many, User.association_reflection(:privileges)[:type]
+
+    # Many to one
+    User.many_to_one :privilege, through: :security_groups
+    assert_equal :one_through_many, User.association_reflection(:privilege)[:type]
+
+    # Normal associations
+    assert_equal :one_to_many, User.association_reflection(:user_has_security_groups)[:type]
+    assert_equal :many_to_one, UserHasSecurityGroup.association_reflection(:user)[:type]
+
+  end
+
+  it "should call #associate_through when creating associations that are based on others" do
+    skip
+  end
+
+  it "should raise errors for association types that can not be through-associated" do
+    assert_raises Sequel::Error do
+      User.one_to_one :privilege, through: :security_groups
+    end
   end
 
 end

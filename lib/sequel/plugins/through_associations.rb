@@ -3,7 +3,7 @@ module Sequel
     module ThroughAssociations
 
       ASSOCIATION_THROUGH_TYPES = {
-        :one_to_many => :one_through_many,
+        :one_to_many => :many_through_many,
         :many_to_one => :one_through_many,
         :many_to_many => :many_through_many
         # one_to_one
@@ -16,7 +16,7 @@ module Sequel
 
       # Ensure associations are loaded
       def self.apply mod
-        Sequel.extension :inflector
+        Sequel.extension :inflector unless "".respond_to?(:pluralize)
         mod.plugin :many_through_many
       end
 
