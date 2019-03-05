@@ -3,10 +3,10 @@ module Sequel
     module ThroughAssociations
 
       ASSOCIATION_THROUGH_TYPES = {
+        :one_to_one => :one_through_many,
         :one_to_many => :many_through_many,
         :many_to_one => :one_through_many,
         :many_to_many => :many_through_many
-        # one_to_one
         # many_to_pg_array
         # pg_array_to_many
       }

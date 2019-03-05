@@ -54,6 +54,10 @@ describe "Sequel::Plugins::ThroughAssociations" do
     User.many_to_one :privilege, through: :security_groups
     assert_equal :one_through_many, User.association_reflection(:privilege)[:type]
 
+    # One to one
+    User.one_to_one :privilege, through: :security_groups
+    assert_equal :one_through_many, User.association_reflection(:privilege)[:type]
+
     # Normal associations
     assert_equal :one_to_many, User.association_reflection(:user_has_security_groups)[:type]
     assert_equal :many_to_one, UserHasSecurityGroup.association_reflection(:user)[:type]
@@ -62,12 +66,6 @@ describe "Sequel::Plugins::ThroughAssociations" do
 
   it "should call #associate_through when creating associations that are based on others" do
     skip
-  end
-
-  it "should raise errors for association types that can not be through-associated" do
-    assert_raises Sequel::Error do
-      User.one_to_one :privilege, through: :security_groups
-    end
   end
 
 end
