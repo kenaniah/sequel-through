@@ -9,8 +9,10 @@ module Sequel
 
       module ClassMethods
 
-        @@_resolving = false
-        @@_resolver_stack = []
+        def self.extended mod
+          @@_resolving = false
+          @@_resolver_stack = []
+        end
 
         # Solves any remaining cyclical associations
         def solve_cyclical_associations!

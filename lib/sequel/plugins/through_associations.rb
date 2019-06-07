@@ -18,9 +18,11 @@ module Sequel
       def self.apply mod
         Sequel.extension :inflector unless "".respond_to?(:pluralize)
         mod.plugin :many_through_many
+        mod.singleton_class.prepend PrependClassMethods
       end
 
-      module ClassMethods
+      # This ensures that our definition of associate jumps the stack
+      module PrependClassMethods
 
         def associate type, name, opts = OPTS, &block
 
@@ -33,10 +35,17 @@ module Sequel
 
         end
 
+      end
+
+      module ClassMethods
+
         # Associates a related model with the current model using another association
         # as the intermediary.
         def associate_through type, name, opts, &block
-          raise Error, "#{type} does not support through associations" unless assoc_type = Sequel.synchronize{ASSOCIATION_THROUGH_TYPES[type]}
+
+          unless assoc_type = Sequel.synchronize{ASSOCIATION_THROUGH_TYPES[type]}
+            raise Error, "#{type} does not support through associations"
+          end
 
           result = find_association_path(**opts, name: name, models: self, from_through: true)
 
